@@ -194,5 +194,5 @@ const URLProtocol ff_concat_protocol = {
     .url_seek       = concat_seek,
     .url_close      = concat_close,
     .priv_data_size = sizeof(struct concat_data),
-    .default_whitelist = "concat,file,subfile",
+    .default_whitelist = "concat,file,subfile,http,https,tls,rtp,tcp,udp",
 };
