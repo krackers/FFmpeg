@@ -38,6 +38,7 @@ struct concat_data {
     struct concat_nodes *nodes;    ///< list of nodes to concat
     size_t               length;   ///< number of cat'ed nodes
     size_t               current;  ///< index of currently read node
+    AVDictionary*        options;
 };
 
 static av_cold int concat_close(URLContext *h)
@@ -96,9 +97,13 @@ static av_cold int concat_open(URLContext *h, const char *uri, int flags)
         av_strlcpy(node_uri, uri, len + 1);
         uri += len + strspn(uri + len, AV_CAT_SEPARATOR);
 
+        AVDictionary *copiedDict = NULL;
+        av_dict_copy(&copiedDict, data->options, 0);
+        
         /* creating URLContext */
         err = ffurl_open_whitelist(&uc, node_uri, flags,
-                                   &h->interrupt_callback, NULL, h->protocol_whitelist, h->protocol_blacklist, h);
+                                   &h->interrupt_callback, &copiedDict, h->protocol_whitelist, h->protocol_blacklist, h);
+        av_dict_free(&copiedDict);
         if (err < 0)
             break;
 
