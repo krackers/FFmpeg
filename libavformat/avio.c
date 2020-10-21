@@ -304,6 +304,18 @@ int ffurl_alloc(URLContext **puc, const char *filename, int flags,
     return AVERROR_PROTOCOL_NOT_FOUND;
 }
 
+// Ugly hack to store options in concat private data
+struct concat_nodes {
+    URLContext *uc;                ///< node's URLContext
+    int64_t     size;              ///< url filesize
+};
+struct concat_data {
+    struct concat_nodes *nodes;    ///< list of nodes to concat
+    size_t               length;   ///< number of cat'ed nodes
+    size_t               current;  ///< index of currently read node
+    AVDictionary*        options;
+};
+
 int ffurl_open_whitelist(URLContext **puc, const char *filename, int flags,
                          const AVIOInterruptCB *int_cb, AVDictionary **options,
                          const char *whitelist, const char* blacklist,
@@ -322,6 +334,12 @@ int ffurl_open_whitelist(URLContext **puc, const char *filename, int flags,
     if (options && (*puc)->prot->priv_data_class &&
         (ret = av_opt_set_dict((*puc)->priv_data, options)) < 0)
         goto fail;
+    
+    if (!strcmp((*puc)->prot->name, "concat") && (*puc)->priv_data) {
+        ((struct concat_data *) (*puc)->priv_data)->options = *options;
+        options = NULL;
+        av_log(NULL, AV_LOG_VERBOSE, "Finished copying options for concat\n");
+    }
 
     if (!options)
         options = &tmp_opts;
