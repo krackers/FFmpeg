@@ -373,7 +373,6 @@ static av_cold int ffat_init_encoder(AVCodecContext *avctx)
                                   sizeof(rate), &rate);
     }
 
-    at->quality = 96 - at->quality * 32;
     AudioConverterSetProperty(at->converter, kAudioConverterCodecQuality,
                               sizeof(at->quality), &at->quality);
 
@@ -602,7 +601,7 @@ static const AVOption options[] = {
         {"cvbr", "constrained variable bitrate", 0, AV_OPT_TYPE_CONST, {.i64 = kAudioCodecBitRateControlMode_VariableConstrained}, INT_MIN, INT_MAX, AE, "mode"},
         {"vbr" , "variable bitrate", 0, AV_OPT_TYPE_CONST, {.i64 = kAudioCodecBitRateControlMode_Variable}, INT_MIN, INT_MAX, AE, "mode"},
 #endif
-    {"aac_at_quality", "quality vs speed control", offsetof(ATDecodeContext, quality), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 2, AE},
+    {"aac_at_quality", "quality vs speed control", offsetof(ATDecodeContext, quality), AV_OPT_TYPE_INT, {.i64 = 127}, 0, 127, AE},
     { NULL },
 };
 
